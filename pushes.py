@@ -29,16 +29,22 @@ def get_remote_text(url):
                 return local_file.read()
 
         while True:
-            r = requests.get(url, headers={'user-agent': 'autophone'})
-            if r.ok:
-                return r.text
-            elif r.status_code != 503:
-                logger.warning("Unable to open url %s : %s",
-                               url, r.reason)
-                return None
-            # Server is too busy. Wait and try again.
-            # See https://bugzilla.mozilla.org/show_bug.cgi?id=1146983#c10
-            logger.warning("HTTP 503 Server Too Busy: url %s", url)
+            try:
+                r = requests.get(url, headers={'user-agent': 'autophone'})
+                if r.ok:
+                    return r.text
+                elif r.status_code == 503:
+                    # Server is too busy.
+                    # See https://bugzilla.mozilla.org/show_bug.cgi?id=1146983#c10
+                    logger.warning("HTTP 503 Server Too Busy: url %s", url)
+                else:
+                    logger.warning("Unable to open url %s : %s",
+                                   url, r.reason)
+                    return None
+            except requests.ConnectionError, e:
+                logger.warning("ConnectionError: %s. Will retry..." % e)
+
+            # Wait and try again.
             time.sleep(60 + random.randrange(0, 30, 1))
     except Exception:
         logger.exception('Unable to open %s', url)
