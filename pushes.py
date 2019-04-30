@@ -161,7 +161,7 @@ class Treeherder(object):
         return get_remote_json(pushes_url)
 
     def get_changeset_resultset(self, repo, revision):
-        resultset_url = '%s/api/project/%s/resultset/?full=true&count=10&revision=%s' % (
+        resultset_url = '%s/api/project/%s/push/?full=true&count=10&revision=%s' % (
             self.treeherder_url, repo, revision)
         return get_remote_json(resultset_url)
 
